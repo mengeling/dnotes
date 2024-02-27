@@ -2,10 +2,10 @@ import { Dispatch } from "redux";
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
 
-import { client } from "api/client";
-import { useAppSelector } from "redux/hooks";
-import { Note, Notes, setNotes, setSelectedNote } from "redux/notes";
-import { formatTimestampShort } from "utils";
+import { client } from "../api/client";
+import { useAppSelector } from "../redux/hooks";
+import { Note, Notes, setNotes, setSelectedNote } from "../redux/notes";
+import { formatTimestampShort } from "../utils";
 
 const UnconnectedNotes = ({ setNotes, setSelectedNote }) => {
   const notes = useAppSelector((state) => state.notesReducer.notes);

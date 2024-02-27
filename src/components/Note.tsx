@@ -1,17 +1,18 @@
 import { Dispatch } from "redux";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
+import { Web5 } from "@web5/api";
 
-import { client } from "api/client";
-import { useAppSelector } from "redux/hooks";
+import { client } from "../api/client";
+import { useAppSelector } from "../redux/hooks";
 import {
   setAddNote,
   setRemoveNote,
   setNotes,
   setUpdateNote,
-} from "redux/notes";
-import { Note, Notes } from "redux/notes";
-import { formatTimestamp } from "utils";
+} from "../redux/notes";
+import { Note, Notes } from "../redux/notes";
+import { formatTimestamp } from "../utils";
 
 const UnconnectedNoteBody = ({
   setAddNote,
@@ -19,18 +20,47 @@ const UnconnectedNoteBody = ({
   setRemoveNote,
   setUpdateNote,
 }) => {
+  const [web5, setWeb5] = useState(null);
+  const [myDid, setMyDid] = useState("");
   const [newNoteIsOpen, selectedNote] = useAppSelector((state) => [
     state.notesReducer.newNoteIsOpen,
     state.notesReducer.selectedNote,
   ]);
 
+  useEffect(() => {
+    const connectToWeb5 = async () => {
+      const { web5, did: myDid } = await Web5.connect();
+      setWeb5(web5);
+      setMyDid(myDid);
+    };
+
+    connectToWeb5();
+  });
+
   const createNote = async () => {
-    const response = await client.post("http://localhost:5000/api/notes", {
-      title: "",
-      tag: "",
-      note: "",
+    const { record } = await web5.dwn.records.create({
+      data: {
+        title: "",
+        tag: "",
+        note: "",
+      },
+      message: {
+        schema: "http://some-schema-registry.org/note",
+        dataFormat: "application/json",
+      },
     });
-    setAddNote(response.note);
+
+    const data = await record.data.json();
+    console.log(data);
+    // const todo = { record, data, id: record.id };
+    // todos.value.push(todo);
+
+    // const response = await client.post("http://localhost:5000/api/notes", {
+    //   title: "",
+    //   tag: "",
+    //   note: "",
+    // });
+    // setAddNote(response.note);
   };
 
   const handleChange =
