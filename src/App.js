@@ -1,3 +1,5 @@
+import React from "react";
+
 import "./styles/_index.css";
 import { Note, SideNav } from "./components";
 

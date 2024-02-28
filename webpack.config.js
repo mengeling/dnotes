@@ -11,6 +11,9 @@ module.exports = {
   devServer: {
     port: 3000,
     static: "./dist",
+    client: {
+      overlay: false,
+    },
   },
   resolve: {
     extensions: [".js", ".jsx", ".json", ".ts", ".tsx", ".wasm"],
@@ -55,6 +58,7 @@ module.exports = {
       Buffer: "buffer.Buffer",
     }),
     new HtmlWebpackPlugin({
+      favicon: "./public/favicon.ico",
       template: "./public/index.html",
     }),
   ],
