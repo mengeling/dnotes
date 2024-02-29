@@ -20,6 +20,7 @@ module.exports = {
     fallback: {
       crypto: require.resolve("crypto-browserify"),
       stream: require.resolve("stream-browserify"),
+      process: require.resolve("process/browser"),
     },
   },
   module: {
@@ -43,20 +44,32 @@ module.exports = {
         use: "ts-loader",
         exclude: /node_modules/,
       },
+      {
+        test: /\.m?js$/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
     ],
   },
   plugins: [
-    new webpack.IgnorePlugin({
-      resourceRegExp: /sodium-javascript$/,
+    // new webpack.IgnorePlugin({
+    //   resourceRegExp: /sodium-javascript$/,
+    // }),
+    // new webpack.NormalModuleReplacementPlugin(
+    //   /node:crypto/,
+    //   require.resolve("crypto-browserify")
+    // ),
+    new webpack.NormalModuleReplacementPlugin(/node:crypto/, (resource) => {
+      resource.request = resource.request.replace(/^node:/, "");
     }),
-    new webpack.NormalModuleReplacementPlugin(
-      /node:crypto/,
-      require.resolve("crypto-browserify")
-    ),
-    new webpack.DefinePlugin({
-      global: "globalThis",
-      Buffer: "buffer.Buffer",
+    new webpack.ProvidePlugin({
+      process: "process/browser",
     }),
+    // new webpack.DefinePlugin({
+    //   global: "globalThis",
+    //   Buffer: "buffer.Buffer",
+    // }),
     new HtmlWebpackPlugin({
       favicon: "./public/favicon.ico",
       template: "./public/index.html",

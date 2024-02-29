@@ -12,8 +12,9 @@ const UnconnectedNotes = ({ setNotes, setSelectedNote }) => {
 
   useEffect(() => {
     const getNotes = async () => {
-      const response = await client.get("http://localhost:5000/api/notes");
-      setNotes(response.notes);
+      // const response = await client.get("http://localhost:5000/api/notes");
+      // setNotes(response.notes);
+      setNotes({});
     };
     getNotes();
   }, [setNotes]);

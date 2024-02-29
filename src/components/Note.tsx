@@ -38,23 +38,21 @@ const UnconnectedNoteBody = ({
   });
 
   const createNote = async () => {
-    const { record } = await web5.dwn.records.create({
-      data: {
-        title: "",
-        tag: "",
-        note: "",
-      },
-      message: {
-        schema: "http://some-schema-registry.org/note",
-        dataFormat: "application/json",
-      },
-    });
-
-    const data = await record.data.json();
-    console.log(data);
+    // const { record } = await web5.dwn.records.create({
+    //   data: {
+    //     title: "",
+    //     tag: "",
+    //     note: "",
+    //   },
+    //   message: {
+    //     schema: "http://some-schema-registry.org/note",
+    //     dataFormat: "application/json",
+    //   },
+    // });
+    // const data = await record.data.json();
+    // console.log(data);
     // const todo = { record, data, id: record.id };
     // todos.value.push(todo);
-
     // const response = await client.post("http://localhost:5000/api/notes", {
     //   title: "",
     //   tag: "",
@@ -70,8 +68,8 @@ const UnconnectedNoteBody = ({
         | React.ChangeEvent<HTMLInputElement>
         | React.ChangeEvent<HTMLTextAreaElement>
     ) => {
-      const titleField = field === "title";
-      const body = titleField
+      const isFieldTitle = field === "title";
+      const body = isFieldTitle
         ? {
             title: e.target.value,
             note: selectedNote.note,
@@ -82,18 +80,33 @@ const UnconnectedNoteBody = ({
             note: e.target.value,
             tag: selectedNote.tag,
           };
-      const response = await client.put(
-        `http://localhost:5000/api/notes/${selectedNote.id}`,
-        body
-      );
-      setUpdateNote(response.updatedNote);
+      const { web5, did: myDid } = await Web5.connect();
+      console.log(web5);
+      console.log(myDid);
+
+      const { record } = await web5.dwn.records.create({
+        data: body,
+        message: {
+          schema: "http://some-schema-registry.org/note",
+          dataFormat: "application/json",
+        },
+      });
+
+      const data = await record.data.json();
+      console.log(data);
+
+      // const response = await client.put(
+      //   `http://localhost:5000/api/notes/${selectedNote.id}`,
+      //   body
+      // );
+      // setUpdateNote(body);
     };
 
   const deleteNote = async () => {
-    const response = await client.delete(
-      `http://localhost:5000/api/notes/${selectedNote.id}`
-    );
-    setRemoveNote(parseInt(response.noteId));
+    // const response = await client.delete(
+    //   `http://localhost:5000/api/notes/${selectedNote.id}`
+    // );
+    // setRemoveNote(parseInt(response.noteId));
   };
 
   return (
