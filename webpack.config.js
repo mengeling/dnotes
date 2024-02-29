@@ -53,23 +53,12 @@ module.exports = {
     ],
   },
   plugins: [
-    // new webpack.IgnorePlugin({
-    //   resourceRegExp: /sodium-javascript$/,
-    // }),
-    // new webpack.NormalModuleReplacementPlugin(
-    //   /node:crypto/,
-    //   require.resolve("crypto-browserify")
-    // ),
     new webpack.NormalModuleReplacementPlugin(/node:crypto/, (resource) => {
       resource.request = resource.request.replace(/^node:/, "");
     }),
     new webpack.ProvidePlugin({
       process: "process/browser",
     }),
-    // new webpack.DefinePlugin({
-    //   global: "globalThis",
-    //   Buffer: "buffer.Buffer",
-    // }),
     new HtmlWebpackPlugin({
       favicon: "./public/favicon.ico",
       template: "./public/index.html",
