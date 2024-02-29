@@ -10,12 +10,12 @@ export const setNotes = (notes: Notes) => ({
   payload: { notes },
 });
 
-export const setRemoveNote = (id: number) => ({
+export const setRemoveNote = (id: string) => ({
   type: "notes/setRemoveNote",
   payload: { id },
 });
 
-export const setSelectedNote = (id: number) => ({
+export const setSelectedNote = (id: string) => ({
   type: "notes/setSelectedNote",
   payload: { id },
 });

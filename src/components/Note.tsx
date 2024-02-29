@@ -14,6 +14,39 @@ import {
 import { Note, Notes } from "../redux/notes";
 import { formatTimestamp } from "../utils";
 
+const createNoteRecord = async (web5, data) => {
+  const { record } = await web5.dwn.records.create({
+    data,
+    message: {
+      schema: "http://some-schema-registry.org/note",
+      dataFormat: "application/json",
+    },
+  });
+  return record;
+};
+
+const updateNoteRecord = async (web5, data, recordId) => {
+  const { record } = await web5.dwn.records.read({
+    message: {
+      filter: {
+        recordId,
+      },
+    },
+  });
+  await record.update({ data });
+  return record;
+};
+
+const getNoteData = async (record) => {
+  const data = await record.data.json();
+  return {
+    ...data,
+    id: record.id,
+    createdAt: record.dateCreated,
+    modifiedAt: record.dateModified,
+  };
+};
+
 const UnconnectedNoteBody = ({
   setAddNote,
   setNotes,
@@ -38,27 +71,14 @@ const UnconnectedNoteBody = ({
   });
 
   const createNote = async () => {
-    // const { record } = await web5.dwn.records.create({
-    //   data: {
-    //     title: "",
-    //     tag: "",
-    //     note: "",
-    //   },
-    //   message: {
-    //     schema: "http://some-schema-registry.org/note",
-    //     dataFormat: "application/json",
-    //   },
-    // });
-    // const data = await record.data.json();
-    // console.log(data);
-    // const todo = { record, data, id: record.id };
-    // todos.value.push(todo);
-    // const response = await client.post("http://localhost:5000/api/notes", {
-    //   title: "",
-    //   tag: "",
-    //   note: "",
-    // });
-    // setAddNote(response.note);
+    const record = await createNoteRecord(web5, {
+      title: "",
+      tag: "",
+      note: "",
+    });
+    const note = await getNoteData(record);
+    console.log(note);
+    setAddNote(note);
   };
 
   const handleChange =
@@ -69,7 +89,7 @@ const UnconnectedNoteBody = ({
         | React.ChangeEvent<HTMLTextAreaElement>
     ) => {
       const isFieldTitle = field === "title";
-      const body = isFieldTitle
+      const data = isFieldTitle
         ? {
             title: e.target.value,
             note: selectedNote.note,
@@ -80,26 +100,39 @@ const UnconnectedNoteBody = ({
             note: e.target.value,
             tag: selectedNote.tag,
           };
-      const { web5, did: myDid } = await Web5.connect();
-      console.log(web5);
-      console.log(myDid);
-
-      const { record } = await web5.dwn.records.create({
-        data: body,
-        message: {
-          schema: "http://some-schema-registry.org/note",
-          dataFormat: "application/json",
-        },
-      });
-
-      const data = await record.data.json();
       console.log(data);
+      console.log(selectedNote);
+
+      const record = !selectedNote
+        ? await createNoteRecord(web5, data)
+        : await updateNoteRecord(web5, data, selectedNote.id);
+
+      // const record = await updateNoteRecord(web5, data, selectedNote.id);
+      const note = await getNoteData(record);
+      console.log(note);
+
+      // const { record } = await web5.dwn.records.create({
+      //   data: body,
+      //   message: {
+      //     schema: "http://some-schema-registry.org/note",
+      //     dataFormat: "application/json",
+      //   },
+      // });
+
+      // const note = await record.data.json();
+      // const fullNote = {
+      //   ...note,
+      //   id: record.id,
+      //   createdAt: record.dateCreated,
+      //   modifiedAt: record.dateModified,
+      // };
+      // console.log(fullNote);
 
       // const response = await client.put(
       //   `http://localhost:5000/api/notes/${selectedNote.id}`,
       //   body
       // );
-      // setUpdateNote(body);
+      setUpdateNote(note);
     };
 
   const deleteNote = async () => {
@@ -152,7 +185,7 @@ const UnconnectedNoteBody = ({
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   setAddNote: (note: Note) => dispatch(setAddNote(note)),
   setNotes: (notes: Notes) => dispatch(setNotes(notes)),
-  setRemoveNote: (id: number) => dispatch(setRemoveNote(id)),
+  setRemoveNote: (id: string) => dispatch(setRemoveNote(id)),
   setUpdateNote: (note: Note) => dispatch(setUpdateNote(note)),
 });
 

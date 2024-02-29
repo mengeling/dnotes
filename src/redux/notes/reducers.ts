@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Note } from "redux/notes/types";
 
 const emptyNote: Note = {
-  id: 0,
+  id: "",
   title: "",
   note: "",
   tag: "",
@@ -13,7 +13,7 @@ const emptyNote: Note = {
 
 export const initialState = {
   notes: [],
-  selectedNote: emptyNote,
+  selectedNote: null,
   newNoteIsOpen: false,
 };
 
@@ -35,14 +35,14 @@ const notesSlice = createSlice({
       state.notes = notes;
       state.selectedNote = notes[0];
     },
-    setRemoveNote: (state, action: PayloadAction<{ id: number }>) => {
+    setRemoveNote: (state, action: PayloadAction<{ id: string }>) => {
       const notes = state.notes.filter(
         (note: Note) => note.id !== action.payload.id
       );
       state.notes = notes;
       state.selectedNote = notes[0];
     },
-    setSelectedNote: (state, action: PayloadAction<{ id: number }>) => {
+    setSelectedNote: (state, action: PayloadAction<{ id: string }>) => {
       state.selectedNote = state.notes.find(
         (note: Note) => note.id === action.payload.id
       );

@@ -19,7 +19,7 @@ const UnconnectedNotes = ({ setNotes, setSelectedNote }) => {
     getNotes();
   }, [setNotes]);
 
-  const onClick = (noteId: number) => (e: React.SyntheticEvent) => {
+  const onClick = (noteId: string) => (e: React.SyntheticEvent) => {
     setSelectedNote(noteId);
   };
 
@@ -45,7 +45,7 @@ const UnconnectedNotes = ({ setNotes, setSelectedNote }) => {
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   setNotes: (notes: Notes) => dispatch(setNotes(notes)),
-  setSelectedNote: (id: number) => dispatch(setSelectedNote(id)),
+  setSelectedNote: (id: string) => dispatch(setSelectedNote(id)),
 });
 
 export default connect(null, mapDispatchToProps)(UnconnectedNotes);
