@@ -1,10 +1,17 @@
+import debounce from "lodash/debounce";
 import { Dispatch } from "redux";
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { connect } from "react-redux";
 
 import { useWeb5 } from "../context/Web5Context";
 import { useAppSelector } from "../redux/hooks";
-import { Note, setAddNote, setRemoveNote, setUpdateNote } from "../redux/notes";
+import {
+  Note,
+  NoteInputs,
+  setAddNote,
+  setRemoveNote,
+  setUpdateNote,
+} from "../redux/notes";
 import {
   buildNoteFromRecord,
   createNoteRecord,
@@ -18,6 +25,11 @@ const UnconnectedNoteBody = ({ setAddNote, setRemoveNote, setUpdateNote }) => {
     state.notes.newNoteIsOpen,
     state.notes.selectedNote,
   ]);
+  const [localData, setLocalData] = useState({
+    title: selectedNote.title,
+    note: selectedNote.note,
+    tag: selectedNote.tag,
+  });
 
   const createNote = async () => {
     const record = await createNoteRecord(web5, {
@@ -29,33 +41,34 @@ const UnconnectedNoteBody = ({ setAddNote, setRemoveNote, setUpdateNote }) => {
     setAddNote(note);
   };
 
-  const handleChange =
-    (field: string) =>
-    async (
+  const handleChange = (field: string) => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/rules-of-hooks
+    const updateData = useCallback(
+      debounce(async (data: NoteInputs) => {
+        const record =
+          selectedNote.id === ""
+            ? await createNoteRecord(web5, data)
+            : await updateNoteRecord(web5, data, selectedNote.id);
+
+        const note = await buildNoteFromRecord(record);
+        setUpdateNote(note);
+      }, 100),
+      [web5, selectedNote, setUpdateNote]
+    );
+
+    return async (
       e:
         | React.ChangeEvent<HTMLInputElement>
         | React.ChangeEvent<HTMLTextAreaElement>
     ) => {
-      const isFieldTitle = field === "title";
-      const data = isFieldTitle
-        ? {
-            title: e.target.value,
-            note: selectedNote.note,
-            tag: selectedNote.tag,
-          }
-        : {
-            title: selectedNote.title,
-            note: e.target.value,
-            tag: selectedNote.tag,
-          };
-      const record =
-        selectedNote.id === ""
-          ? await createNoteRecord(web5, data)
-          : await updateNoteRecord(web5, data, selectedNote.id);
-
-      const note = await buildNoteFromRecord(record);
-      setUpdateNote(note);
+      const newData =
+        field === "title"
+          ? { ...localData, title: e.target.value }
+          : { ...localData, note: e.target.value };
+      setLocalData(newData);
+      updateData(newData);
     };
+  };
 
   const deleteNote = async () => {
     await web5.dwn.records.delete({
@@ -83,14 +96,14 @@ const UnconnectedNoteBody = ({ setAddNote, setRemoveNote, setUpdateNote }) => {
           <input
             type="text"
             className="note-text title"
-            value={selectedNote.title}
+            value={localData.title}
             onChange={handleChange("title")}
             placeholder="Title"
           />
           <textarea
             className="note-text body"
             rows={20}
-            value={selectedNote.note}
+            value={localData.note}
             onChange={handleChange("body")}
             placeholder="Start writing your note here"
           />
