@@ -13,7 +13,7 @@ const emptyNote: Note = {
 
 export const initialState = {
   notes: [],
-  selectedNote: null,
+  selectedNote: emptyNote,
   newNoteIsOpen: false,
 };
 
@@ -33,19 +33,26 @@ const notesSlice = createSlice({
         return noteBDate.getTime() - noteADate.getTime();
       });
       state.notes = notes;
-      state.selectedNote = notes[0];
+      if (notes.length !== 0) {
+        state.selectedNote = notes[0];
+      }
     },
     setRemoveNote: (state, action: PayloadAction<{ id: string }>) => {
       const notes = state.notes.filter(
         (note: Note) => note.id !== action.payload.id
       );
       state.notes = notes;
-      state.selectedNote = notes[0];
+      if (notes.length !== 0) {
+        state.selectedNote = notes[0];
+      }
     },
     setSelectedNote: (state, action: PayloadAction<{ id: string }>) => {
-      state.selectedNote = state.notes.find(
+      const note = state.notes.find(
         (note: Note) => note.id === action.payload.id
       );
+      if (note) {
+        state.selectedNote = note;
+      }
     },
     setUpdateNote: (state, action: PayloadAction<{ note: Note }>) => {
       const updatedNote = action.payload.note;

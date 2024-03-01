@@ -4,7 +4,7 @@ import { notesReducer } from "./notes";
 
 export const store = configureStore({
   reducer: {
-    notesReducer,
+    notes: notesReducer,
   },
 });
 
