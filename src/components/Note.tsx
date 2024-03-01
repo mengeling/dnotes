@@ -1,6 +1,6 @@
 import debounce from "lodash/debounce";
 import { Dispatch } from "redux";
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { connect } from "react-redux";
 
 import { useWeb5 } from "../context/Web5Context";
@@ -25,35 +25,28 @@ const UnconnectedNoteBody = ({ setAddNote, setRemoveNote, setUpdateNote }) => {
     state.notes.newNoteIsOpen,
     state.notes.selectedNote,
   ]);
-  const [localData, setLocalData] = useState({
-    title: selectedNote.title,
-    note: selectedNote.note,
-    tag: selectedNote.tag,
-  });
 
-  const createNote = async () => {
-    const record = await createNoteRecord(web5, {
-      title: "",
-      tag: "",
-      note: "",
-    });
+  const createNote = async (noteInputs: NoteInputs) => {
+    const record = await createNoteRecord(web5, noteInputs);
     const note = await buildNoteFromRecord(record);
     setAddNote(note);
   };
 
+  const onClickCreateNote = async () => {
+    await createNote({
+      title: "",
+      tag: "",
+      note: "",
+    });
+  };
+
   const handleChange = (field: string) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/rules-of-hooks
-    const updateData = useCallback(
-      debounce(async (data: NoteInputs) => {
-        const record =
-          selectedNote.id === ""
-            ? await createNoteRecord(web5, data)
-            : await updateNoteRecord(web5, data, selectedNote.id);
-
-        const note = await buildNoteFromRecord(record);
-        setUpdateNote(note);
+    const updateRecord = useCallback(
+      debounce(async (noteInputs: NoteInputs) => {
+        await updateNoteRecord(web5, noteInputs, selectedNote.id);
       }, 100),
-      [web5, selectedNote, setUpdateNote]
+      [web5, selectedNote]
     );
 
     return async (
@@ -61,12 +54,29 @@ const UnconnectedNoteBody = ({ setAddNote, setRemoveNote, setUpdateNote }) => {
         | React.ChangeEvent<HTMLInputElement>
         | React.ChangeEvent<HTMLTextAreaElement>
     ) => {
-      const newData =
+      const noteInputs =
         field === "title"
-          ? { ...localData, title: e.target.value }
-          : { ...localData, note: e.target.value };
-      setLocalData(newData);
-      updateData(newData);
+          ? {
+              title: e.target.value,
+              note: selectedNote.note,
+              tag: selectedNote.tag,
+            }
+          : {
+              title: selectedNote.title,
+              note: e.target.value,
+              tag: selectedNote.tag,
+            };
+      if (selectedNote.id === "") {
+        await createNote(noteInputs);
+      } else {
+        const updatedNote = {
+          ...selectedNote,
+          title: noteInputs.title,
+          note: noteInputs.note,
+        };
+        setUpdateNote(updatedNote);
+        updateRecord(noteInputs);
+      }
     };
   };
 
@@ -96,14 +106,14 @@ const UnconnectedNoteBody = ({ setAddNote, setRemoveNote, setUpdateNote }) => {
           <input
             type="text"
             className="note-text title"
-            value={localData.title}
+            value={selectedNote.title}
             onChange={handleChange("title")}
             placeholder="Title"
           />
           <textarea
             className="note-text body"
             rows={20}
-            value={localData.note}
+            value={selectedNote.note}
             onChange={handleChange("body")}
             placeholder="Start writing your note here"
           />
@@ -111,7 +121,7 @@ const UnconnectedNoteBody = ({ setAddNote, setRemoveNote, setUpdateNote }) => {
       </div>
       <div className="note-footer">
         {!newNoteIsOpen && (
-          <button className="newnote-button" onClick={createNote}>
+          <button className="newnote-button" onClick={onClickCreateNote}>
             <i className="fa-solid fa-plus"></i>
             <span className="newnote-button-text">New</span>
           </button>

@@ -33,18 +33,14 @@ const notesSlice = createSlice({
         return noteBDate.getTime() - noteADate.getTime();
       });
       state.notes = notes;
-      if (notes.length !== 0) {
-        state.selectedNote = notes[0];
-      }
+      state.selectedNote = notes.length === 0 ? emptyNote : notes[0];
     },
     setRemoveNote: (state, action: PayloadAction<{ id: string }>) => {
       const notes = state.notes.filter(
         (note: Note) => note.id !== action.payload.id
       );
       state.notes = notes;
-      if (notes.length !== 0) {
-        state.selectedNote = notes[0];
-      }
+      state.selectedNote = notes.length === 0 ? emptyNote : notes[0];
     },
     setSelectedNote: (state, action: PayloadAction<{ id: string }>) => {
       const note = state.notes.find(
