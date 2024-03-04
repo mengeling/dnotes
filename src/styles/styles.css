@@ -49,6 +49,7 @@ body {
   height: 55%;
   padding: 0;
   hyphens: auto;
+  white-space: pre-line;
 }
 
 .sidenav-note.date {
